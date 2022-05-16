@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -49,6 +49,7 @@ internal class WeatherServiceTest {
         private val city = "London"
         private val units = "metric"
         private val apiKey = "supersecretapikey"
+
         @Test
         fun `then api call is made with correct path`() {
             runBlocking {
@@ -70,6 +71,60 @@ internal class WeatherServiceTest {
                 val actual = server.takeRequest().method
 
                 assertEquals(expected, actual)
+            }
+        }
+
+        @Test
+        fun `then the response is correctly parsed`() {
+            runBlocking {
+                sut.getWeatherForecastForCity(city = city, units = units, apiKey = apiKey)
+
+                // This will throw no error if it was parsed successfully
+                server.takeRequest()
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("given getWeatherForecastForLocation is executed")
+    inner class GetWeatherForecastForLocation {
+
+        private val lat = 0.0
+        private val lon = 0.0
+        private val units = "metric"
+        private val apiKey = "supersecretapikey"
+
+        @Test
+        fun `then api call is made with correct path`() {
+            runBlocking {
+                sut.getWeatherForecastForLocation(latitude = lat, longitude= lon, units = units, apiKey = apiKey)
+
+                val expected = "/data/2.5/forecast?lat=0.0&lon=0.0&units=metric&appid=supersecretapikey"
+                val actual = server.takeRequest().path
+
+                assertEquals(expected, actual)
+            }
+        }
+
+        @Test
+        fun `then api call is made with correct http method`() {
+            runBlocking {
+                sut.getWeatherForecastForLocation(latitude = lat, longitude= lon, units = units, apiKey = apiKey)
+
+                val expected = "GET"
+                val actual = server.takeRequest().method
+
+                assertEquals(expected, actual)
+            }
+        }
+
+        @Test
+        fun `then the response is correctly parsed`() {
+            runBlocking {
+                sut.getWeatherForecastForLocation(latitude = lat, longitude= lon, units = units, apiKey = apiKey)
+
+                // This will throw no error if it was parsed successfully
+                server.takeRequest()
             }
         }
     }

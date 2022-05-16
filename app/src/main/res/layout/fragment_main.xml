@@ -9,13 +9,14 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:context=".ui.main.MainFragment">
+        tools:context=".ui.main.MainFragment"
+        android:padding="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/cityForForecast"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="city or town"
+            android:hint="@string/please_enter_city_or_town_hint"
             android:textColorHint="#757575"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -25,7 +26,7 @@
             android:id="@+id/getForecast"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Get Forecast"
+            android:text="@string/get_forecast_button"
             app:layout_constraintEnd_toEndOf="@+id/cityForForecast"
             app:layout_constraintStart_toStartOf="@+id/cityForForecast"
             app:layout_constraintTop_toBottomOf="@+id/cityForForecast" />
@@ -34,7 +35,7 @@
             android:id="@+id/getForecastForLocation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Get Forecast For My Location"
+            android:text="@string/get_forecast_for_my_location_button"
             app:layout_constraintEnd_toEndOf="@+id/getForecast"
             app:layout_constraintStart_toStartOf="@+id/getForecast"
             app:layout_constraintTop_toBottomOf="@+id/getForecast" />
@@ -48,6 +49,16 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/getForecastForLocation" />
 
+        <TextView
+            android:id="@+id/weatherLocationName"
+            style="@style/TextAppearance.Material3.TitleLarge"
+            tools:text="London"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/getForecastForLocation"
+            app:layout_constraintStart_toStartOf="@id/getForecastForLocation"
+            app:layout_constraintEnd_toEndOf="@id/getForecastForLocation"/>
+
         <include
             android:id="@+id/day1Forecast"
             layout="@layout/textview_list_layout"
@@ -55,7 +66,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/getForecastForLocation" />
+            app:layout_constraintTop_toBottomOf="@+id/weatherLocationName" />
 
         <include
             android:id="@+id/day2Forecast"

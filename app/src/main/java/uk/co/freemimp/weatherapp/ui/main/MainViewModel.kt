@@ -8,14 +8,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import uk.co.freemimp.weatherapp.domain.model.DayWeather
-import uk.co.freemimp.weatherapp.domain.usecase.Get5Day3HourForecastUseCase
+import uk.co.freemimp.weatherapp.domain.usecase.GetForecastForCityUseCase
+import uk.co.freemimp.weatherapp.domain.usecase.GetForecastForLocationUseCase
+import uk.co.freemimp.weatherapp.domain.usecase.GetLocationFormattedUseCase
 import uk.co.freemimp.weatherapp.mvvm.Event
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val get5Day3HourForecastUseCase: Get5Day3HourForecastUseCase
+    private val getForecastForCityUseCase: GetForecastForCityUseCase,
+    private val getForecastForLocationUseCase: GetForecastForLocationUseCase,
+    private val getLocationFormattedUseCase: GetLocationFormattedUseCase
 ) : ViewModel() {
+
+    private val _weatherLocationName = MutableLiveData<String>()
+    val weatherLocationName: LiveData<String> = _weatherLocationName
 
     private val _day1Forecast = MutableLiveData<List<DayWeather>>()
     val day1Forecast: LiveData<List<DayWeather>> = _day1Forecast
@@ -41,8 +49,26 @@ class MainViewModel @Inject constructor(
 
     fun showForecastForTheCity(city: String) {
         viewModelScope.launch(exceptionHandler) {
+            _showError.postValue(Event(false))
             _showLoading.postValue(Event(true))
-            val forecast = get5Day3HourForecastUseCase.execute(city)
+            val forecast = getForecastForCityUseCase.execute(city)
+            _weatherLocationName.postValue(city)
+            _day1Forecast.postValue(forecast.day1)
+            _day2Forecast.postValue(forecast.day2)
+            _day3Forecast.postValue(forecast.day3)
+            _day4Forecast.postValue(forecast.day4)
+            _day5Forecast.postValue(forecast.day5)
+
+            _showLoading.postValue(Event(false))
+        }
+    }
+
+    fun showForecastForCurrentLocation(latitude: Double, longitude: Double) {
+        viewModelScope.launch(exceptionHandler) {
+            _showError.postValue(Event(false))
+            _showLoading.postValue(Event(true))
+            val forecast = getForecastForLocationUseCase.execute(latitude, longitude)
+            _weatherLocationName.postValue(getLocationFormattedUseCase.execute(latitude, longitude))
             _day1Forecast.postValue(forecast.day1)
             _day2Forecast.postValue(forecast.day2)
             _day3Forecast.postValue(forecast.day3)

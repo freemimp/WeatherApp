@@ -23,15 +23,19 @@ import uk.co.freemimp.weatherapp.utils.TestException
 internal class RetrofitWeatherApiTest {
     @RelaxedMockK
     private lateinit var service: WeatherService
+
     @RelaxedMockK
     private lateinit var mapper: ForecastMapper
+
     @InjectMockKs
     private lateinit var sut: RetrofitWeatherApi
 
     @RelaxedMockK
     private lateinit var response: Response<WeatherForecastResponse>
+
     @RelaxedMockK
     private lateinit var weatherForecastResponse: WeatherForecastResponse
+
     @RelaxedMockK
     private lateinit var forecast: Forecast
 
@@ -39,16 +43,23 @@ internal class RetrofitWeatherApiTest {
     @DisplayName("given getWeatherForecastForCity is invoked, ")
     inner class GetWeatherForecastForCity {
 
+        val city = "London"
+
         @Test
         fun `when service call and mapping is successful, then return forecast `() {
             runBlocking {
-                val city = "London"
                 every { response.isSuccessful } returns true
                 every { response.body() } returns weatherForecastResponse
-                coEvery { service.getWeatherForecastForCity(city, "metric", any()) } returns response
+                coEvery {
+                    service.getWeatherForecastForCity(
+                        city = city,
+                        units = "metric",
+                        apiKey = any()
+                    )
+                } returns response
                 every { mapper.map(weatherForecastResponse) } returns forecast
 
-                val result = sut.getWeatherData(city)
+                val result = sut.getWeatherDataForCity(city = city)
                 val expected = forecast
 
                 assertEquals(expected, result)
@@ -58,22 +69,109 @@ internal class RetrofitWeatherApiTest {
         @Test
         fun `when service call is not successful, then throw http exception `() {
             runBlocking {
-                val city = "London"
                 every { response.isSuccessful } returns false
 
-                coEvery { service.getWeatherForecastForCity(city, "metric", any()) } returns response
+                coEvery {
+                    service.getWeatherForecastForCity(
+                        city = city,
+                        units = "metric",
+                        apiKey = any()
+                    )
+                } returns response
 
-                assertThrows<HttpException> { sut.getWeatherData(city) }
+                assertThrows<HttpException> { sut.getWeatherDataForCity(city = city) }
             }
         }
 
         @Test
         fun `when service call throws exception, then throw exception `() {
             runBlocking {
-                val city = "London"
-                coEvery { service.getWeatherForecastForCity(city, "metric", any()) } throws TestException
+                coEvery {
+                    service.getWeatherForecastForCity(
+                        city = city,
+                        units = "metric",
+                        apiKey = any()
+                    )
+                } throws TestException
 
-                assertThrows<TestException> { sut.getWeatherData(city) }
+                assertThrows<TestException> { sut.getWeatherDataForCity(city = city) }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("given getWeatherDataForLocation is invoked, ")
+    inner class GetWeatherDataForLocation {
+
+        private val latitude = 0.0
+        private val longitude = 1.0
+
+        @Test
+        fun `when service call and mapping is successful, then return forecast `() {
+            runBlocking {
+                every { response.isSuccessful } returns true
+                every { response.body() } returns weatherForecastResponse
+                coEvery {
+                    service.getWeatherForecastForLocation(
+                        latitude = latitude,
+                        longitude = longitude,
+                        units = "metric",
+                        apiKey = any()
+                    )
+                } returns response
+                every { mapper.map(weatherForecastResponse) } returns forecast
+
+                val result = sut.getWeatherDataForLocation(
+                    latitude = latitude,
+                    longitude = longitude
+                )
+                val expected = forecast
+
+                assertEquals(expected, result)
+            }
+        }
+
+        @Test
+        fun `when service call is not successful, then throw http exception `() {
+            runBlocking {
+                every { response.isSuccessful } returns false
+
+                coEvery {
+                    service.getWeatherForecastForLocation(
+                        latitude = latitude,
+                        longitude = longitude,
+                        units = "metric",
+                        apiKey = any()
+                    )
+                } returns response
+
+                assertThrows<HttpException> {
+                    sut.getWeatherDataForLocation(
+                        latitude = latitude,
+                        longitude = longitude
+                    )
+                }
+            }
+        }
+
+        @Test
+        fun `when service call throws exception, then throw exception `() {
+            runBlocking {
+                coEvery {
+                    service.getWeatherForecastForLocation(
+                        latitude = latitude,
+                        longitude = longitude,
+                        units = "metric",
+                        apiKey = any()
+                    )
+                } throws TestException
+
+                assertThrows<TestException> {
+                    sut.getWeatherDataForLocation(
+                        latitude = latitude,
+                        longitude = longitude
+                    )
+                }
             }
         }
     }

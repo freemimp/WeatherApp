@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import uk.co.freemimp.weatherapp.R
 import uk.co.freemimp.weatherapp.databinding.ForecastItemBinding
 import uk.co.freemimp.weatherapp.domain.model.DayWeather
 
@@ -48,9 +49,12 @@ class ForecastItemAdapter : ListAdapter<DayWeather, RecyclerView.ViewHolder>(
     inner class ForecastItemViewHolder(private val binding: ForecastItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        private val context = binding.root.context
+
         fun bind(dayWeather: DayWeather) {
-            binding.forecastTime.text = dayWeather.time
-            binding.forecastTemperature.text = dayWeather.temperature.toString()
+            binding.forecastTime.text = context.getString(R.string.time, dayWeather.time)
+            binding.forecastTemperature.text =
+                context.getString(R.string.temperature, dayWeather.temperature)
             Glide.with(binding.root).load(dayWeather.iconUrl).into(binding.forecastIcon)
         }
     }

@@ -12,4 +12,12 @@ interface WeatherService {
         @Query("units") units: String,
         @Query("appid") apiKey: String
     ): Response<WeatherForecastResponse>
+
+    @GET("data/2.5/forecast")
+    suspend fun getWeatherForecastForLocation(
+        @Query("lat") latitude: Double,
+        @Query("lon") longitude: Double,
+        @Query("units") units: String,
+        @Query("appid") apiKey: String
+    ): Response<WeatherForecastResponse>
 }

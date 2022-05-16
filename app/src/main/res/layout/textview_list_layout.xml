@@ -8,7 +8,7 @@
     <TextView
         android:id="@+id/dayDate"
         android:layout_width="wrap_content"
-        android:layout_marginTop="16dp"
+        android:paddingTop="16dp"
         android:layout_height="wrap_content"
         tools:text="2022-05-22"
         app:layout_constraintTop_toTopOf="parent"
