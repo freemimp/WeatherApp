@@ -65,7 +65,6 @@ class MainViewModel @Inject constructor(
 
     fun showForecastForCurrentLocation(latitude: Double, longitude: Double) {
         viewModelScope.launch(exceptionHandler) {
-            _showError.postValue(Event(false))
             _showLoading.postValue(Event(true))
             val forecast = getForecastForLocationUseCase.execute(latitude, longitude)
             _weatherLocationName.postValue(getLocationFormattedUseCase.execute(latitude, longitude))

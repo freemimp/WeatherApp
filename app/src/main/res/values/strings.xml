@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">WeatherApp</string>
     <string name="weather_location_name">Weather in %1$s</string>
-    <string name="error_message">Please check internet connection, location is enabled or that name of the city is correct!!!</string>
-    <string name="location_error_message">Please check that location is enabled!</string>
+    <string name="error_message">Please check internet connection or that name of the city is correct!</string>
+    <string name="location_error_message">Please enable location and grant location permission!</string>
     <string name="error_title">Oops something went wrong!</string>
-    <string name="location_error_title">Oops location is disabled!</string>
+    <string name="location_error_title">Oops location is disabled or permission not granted!</string>
     <string name="please_enter_city_or_town_hint">please enter city or town</string>
     <string name="get_forecast_button">Get Forecast</string>
     <string name="get_forecast_for_my_location_button">Get Forecast For My Location</string>

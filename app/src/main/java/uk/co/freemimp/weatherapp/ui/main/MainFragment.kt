@@ -1,6 +1,7 @@
 package uk.co.freemimp.weatherapp.ui.main
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
@@ -9,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -44,6 +46,9 @@ class MainFragment : Fragment() {
     private val day5Adapter = ForecastItemAdapter()
 
     private var errorDialog: AlertDialog? = null
+    private var locationErrorDialog: AlertDialog? = null
+
+    private lateinit var locationPermissionRequest: ActivityResultLauncher<String>
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var location: Location? = null
@@ -56,22 +61,21 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setLocationPermissionRequest()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerViews()
-        setAndAskForLocation()
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    this.location = location
-                }
-            }
+        checkAndAskForPermission()
         setupButtons()
         setupObservables()
     }
 
-    private fun setAndAskForLocation() {
-        val locationPermissionRequest =
+    private fun setLocationPermissionRequest() {
+         locationPermissionRequest =
             registerForActivityResult(
                 ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
@@ -79,26 +83,9 @@ class MainFragment : Fragment() {
                     fusedLocationClient =
                         LocationServices.getFusedLocationProviderClient(requireContext())
                 } else {
-                    showLocationToast()
+                    showLocationRationaleToast()
                 }
             }
-        when {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                fusedLocationClient =
-                    LocationServices.getFusedLocationProviderClient(requireContext())
-            }
-            shouldShowRequestPermissionRationale("Coarse Location permission") -> {
-                showLocationToast()
-            }
-            else -> {
-                locationPermissionRequest.launch(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            }
-        }
     }
 
    private fun createLocationRequest() {
@@ -115,6 +102,7 @@ class MainFragment : Fragment() {
         task.addOnSuccessListener {
             fusedLocationClient =
                 LocationServices.getFusedLocationProviderClient(requireContext())
+            setupLastLocation()
         }
 
         task.addOnFailureListener { exception ->
@@ -129,12 +117,50 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun showLocationToast() {
+    private fun showLocationRationaleToast() {
         Toast.makeText(
             requireContext(),
             "Need location permission to show weather for your location",
             Toast.LENGTH_LONG
         ).show()
+    }
+
+    private fun checkAndAskForPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                fusedLocationClient =
+                    LocationServices.getFusedLocationProviderClient(requireContext())
+            }
+            shouldShowRequestPermissionRationale("Coarse Location permission") -> {
+                showLocationRationaleToast()
+                locationPermissionRequest.launch(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            }
+            else -> {
+                locationPermissionRequest.launch(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            }
+        }
+        setupLastLocation()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setupLastLocation() {
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    this.location = location
+                }
+            }
+            .addOnFailureListener {
+                createLocationRequest()
+                showLocationErrorDialog(R.string.location_error_title, R.string.location_error_message)
+            }
     }
 
     private fun setupButtons() {
@@ -145,7 +171,8 @@ class MainFragment : Fragment() {
                     viewModel.showForecastForCurrentLocation(it.latitude, it.longitude)
                 }
             } else {
-                showErrorDialog(R.string.location_error_title, R.string.location_error_message)
+                showLocationErrorDialog(R.string.location_error_title, R.string.location_error_message)
+
             }
         }
 
@@ -160,7 +187,11 @@ class MainFragment : Fragment() {
         })
 
         viewModel.showError.observe(viewLifecycleOwner, EventObserver {
-            showErrorDialog(R.string.error_title, R.string.error_message)
+            if (it) {
+                showErrorDialog(R.string.error_title, R.string.error_message)
+            } else {
+                errorDialog?.dismiss()
+            }
         })
 
         viewModel.weatherLocationName.observe(viewLifecycleOwner) {
@@ -230,6 +261,17 @@ class MainFragment : Fragment() {
             .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
             .create()
             .also { errorDialog = it })
+            .show()
+    }
+
+    private fun showLocationErrorDialog(title: Int, message: Int) {
+        locationErrorDialog?.dismiss()
+        (locationErrorDialog ?: AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
+            .create()
+            .also { locationErrorDialog = it })
             .show()
     }
 
