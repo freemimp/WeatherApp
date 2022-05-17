@@ -5,6 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import uk.co.freemimp.weatherapp.R
 import uk.co.freemimp.weatherapp.databinding.ForecastItemBinding
 import uk.co.freemimp.weatherapp.domain.model.DayWeather
@@ -50,12 +52,15 @@ class ForecastItemAdapter : ListAdapter<DayWeather, RecyclerView.ViewHolder>(
         RecyclerView.ViewHolder(binding.root) {
 
         private val context = binding.root.context
+        private val requestOptions = RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL)
 
         fun bind(dayWeather: DayWeather) {
             binding.forecastTime.text = context.getString(R.string.time, dayWeather.time)
             binding.forecastTemperature.text =
                 context.getString(R.string.temperature, dayWeather.temperature)
-            Glide.with(binding.root).load(dayWeather.iconUrl).into(binding.forecastIcon)
+
+            Glide.with(binding.root).load(dayWeather.iconUrl).apply(requestOptions)
+                .into(binding.forecastIcon)
         }
     }
 }
