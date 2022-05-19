@@ -12,9 +12,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.testing.TestInstallIn
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
@@ -22,15 +20,14 @@ import org.junit.Test
 import uk.co.freemimp.weatherapp.MainActivity
 import uk.co.freemimp.weatherapp.R
 import uk.co.freemimp.weatherapp.di.ViewModelModule
-import uk.co.freemimp.weatherapp.domain.model.DayWeather
-import uk.co.freemimp.weatherapp.domain.model.Forecast
 import uk.co.freemimp.weatherapp.domain.repository.ForecastRepository
 import uk.co.freemimp.weatherapp.domain.repository.ForecastRepositoryImpl
+import uk.co.freemimp.weatherapp.util.TestException
 import javax.inject.Singleton
 
 @UninstallModules(ViewModelModule::class)
 @HiltAndroidTest
-class MainFragmentTest {
+class MainFragmentErrorTest {
 
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
@@ -46,32 +43,24 @@ class MainFragmentTest {
     }
 
     @Test
-    fun givenApiCallSucceeds_whenGettingForecastForCity_thenForecastLocationNameAndForecastIsDisplayed() {
+    fun givenApiCallIsNotSuccessful_whenGettingForecastForCity_thenErrorIsDisplayed() {
         launchActivity<MainActivity>().use {
-            writeTo(R.id.cityForForecast, "London")
+            writeTo(R.id.cityForForecast, "Lon")
 
             clickOn(R.id.getForecast)
 
-            assertDisplayed(R.id.weatherLocationName)
-            assertDisplayed(R.id.day1Forecast)
-            assertDisplayed(R.id.day2Forecast)
-            assertDisplayed(R.id.day3Forecast)
-            assertDisplayed(R.id.day4Forecast)
-            assertDisplayed(R.id.day5Forecast)
+            assertDisplayed(R.string.error_title)
+            assertDisplayed(R.string.error_message)
         }
     }
 
     @Test
-    fun givenApiCallSucceeds_whenGettingForecastForLocation_thenForecastLocationNameAndForecastIsDisplayed() {
+    fun givenApiCallIsNotSuccessful_whenGettingForecastForLocation_thenErrorIsDisplayed() {
         launchActivity<MainActivity>().use {
             clickOn(R.id.getForecastForLocation)
 
-            assertDisplayed(R.id.weatherLocationName)
-            assertDisplayed(R.id.day1Forecast)
-            assertDisplayed(R.id.day2Forecast)
-            assertDisplayed(R.id.day3Forecast)
-            assertDisplayed(R.id.day4Forecast)
-            assertDisplayed(R.id.day5Forecast)
+            assertDisplayed(R.string.error_title)
+            assertDisplayed(R.string.error_message)
         }
     }
 
@@ -82,22 +71,14 @@ class MainFragmentTest {
         @Singleton
         @Provides
         fun provideMockkForecastRepository(): ForecastRepository {
-            val dayWeather = mockk<DayWeather> {
-                every { date } returns "2022-05-16"
-                every { time } returns "18:00:00"
-                every { temperature } returns 10.25
-                every { iconUrl } returns "https://openweathermap.org/img/wn/01d@2x.png"
-            }
-            val forecast = mockk<Forecast> {
-                every { day1 } returns listOf(dayWeather)
-                every { day2 } returns listOf(dayWeather)
-                every { day3 } returns listOf(dayWeather)
-                every { day4 } returns listOf(dayWeather)
-                every { day5 } returns listOf(dayWeather)
-            }
             val impl = mockk<ForecastRepositoryImpl>()
-            coEvery { impl.get5Day3HourForecastForCity(any()) } returns forecast
-            coEvery { impl.get5Day3HourForecastForCurrentLocation(any(), any()) } returns forecast
+            coEvery { impl.get5Day3HourForecastForCity(any()) } throws TestException
+            coEvery {
+                impl.get5Day3HourForecastForCurrentLocation(
+                    any(),
+                    any()
+                )
+            } throws TestException
             return impl
         }
     }
