@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
 import uk.co.freemimp.weatherapp.R
@@ -63,32 +64,29 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setLocationPermissionRequest()
-    }
+        fusedLocationClient =
+            LocationServices.getFusedLocationProviderClient(requireContext())
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupRecyclerViews()
-        checkAndAskForPermission()
-        setupButtons()
-        setupObservables()
-    }
-
-    private fun setLocationPermissionRequest() {
-         locationPermissionRequest =
+        locationPermissionRequest =
             registerForActivityResult(
                 ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
                 if (isGranted) {
-                    fusedLocationClient =
-                        LocationServices.getFusedLocationProviderClient(requireContext())
+                    checkAndAskForPermission()
                 } else {
                     showLocationRationaleToast()
                 }
             }
     }
 
-   private fun createLocationRequest() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupRecyclerViews()
+        setupButtons()
+        setupObservables()
+    }
+
+    private fun checkLocationSettings() {
         val locationRequest = LocationRequest.create().apply {
             interval = 10000
             fastestInterval = 5000
@@ -100,16 +98,16 @@ class MainFragment : Fragment() {
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener {
-            fusedLocationClient =
-                LocationServices.getFusedLocationProviderClient(requireContext())
-            setupLastLocation()
+            checkAndAskForPermission()
         }
 
         task.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException){
+            if (exception is ResolvableApiException) {
                 try {
-                    exception.startResolutionForResult(requireActivity(),
-                        REQUEST_CHECK_SETTINGS)
+                    exception.startResolutionForResult(
+                        requireActivity(),
+                        REQUEST_CHECK_SETTINGS
+                    )
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                 }
@@ -131,10 +129,9 @@ class MainFragment : Fragment() {
                 requireContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                fusedLocationClient =
-                    LocationServices.getFusedLocationProviderClient(requireContext())
+                getCurrentLocation()
             }
-            shouldShowRequestPermissionRationale("Coarse Location permission") -> {
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
                 showLocationRationaleToast()
                 locationPermissionRequest.launch(
                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -146,33 +143,30 @@ class MainFragment : Fragment() {
                 )
             }
         }
-        setupLastLocation()
     }
 
     @SuppressLint("MissingPermission")
-    private fun setupLastLocation() {
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    this.location = location
-                }
-            }
-            .addOnFailureListener {
-                createLocationRequest()
-                showLocationErrorDialog(R.string.location_error_title, R.string.location_error_message)
-            }
+    private fun getCurrentLocation() {
+        fusedLocationClient.getCurrentLocation(
+            LocationRequest.PRIORITY_HIGH_ACCURACY,
+            CancellationTokenSource().token
+        ).addOnSuccessListener {
+            location = it
+        }
     }
 
     private fun setupButtons() {
         binding.getForecastForLocation.setOnClickListener {
-            createLocationRequest()
+            checkLocationSettings()
             if (location != null) {
                 location?.let {
                     viewModel.showForecastForCurrentLocation(it.latitude, it.longitude)
                 }
             } else {
-                showLocationErrorDialog(R.string.location_error_title, R.string.location_error_message)
-
+                showLocationErrorDialog(
+                    R.string.location_error_title,
+                    R.string.location_error_message
+                )
             }
         }
 
