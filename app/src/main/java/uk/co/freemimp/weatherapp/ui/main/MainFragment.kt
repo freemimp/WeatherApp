@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -127,19 +128,19 @@ class MainFragment : Fragment() {
         when {
             ContextCompat.checkSelfPermission(
                 requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 getCurrentLocation()
             }
-            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 showLocationRationaleToast()
                 locationPermissionRequest.launch(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
             else -> {
                 locationPermissionRequest.launch(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
         }
@@ -172,6 +173,19 @@ class MainFragment : Fragment() {
 
         binding.getForecast.setOnClickListener {
             viewModel.showForecastForTheCity(binding.cityForForecast.text.toString())
+        }
+        binding.openMapForLocation.setOnClickListener {
+            if (location != null) {
+                location?.let {
+                    val action =MainFragmentDirections.actionMainFragmentToLocationFragment(it.latitude.toFloat(), it.longitude.toFloat())
+                    findNavController().navigate(action)
+                }
+            } else {
+                showLocationErrorDialog(
+                    R.string.location_error_title,
+                    R.string.location_error_message
+                )
+            }
         }
     }
 

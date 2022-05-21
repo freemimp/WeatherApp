@@ -13,4 +13,5 @@
     // Weather Item
     <string name="time">Time: %1$s</string>
     <string name="temperature">%1$.2f ℃</string>
+    <string name="open_map_for_my_location">open map for my location</string>
 </resources>
