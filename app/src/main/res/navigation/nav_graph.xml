@@ -26,7 +26,7 @@
     </fragment>
     <fragment
         android:id="@+id/locationFragment"
-        android:name="uk.co.freemimp.weatherapp.ui.main.map.LocationFragment"
+        android:name="uk.co.freemimp.weatherapp.ui.map.LocationFragment"
         android:label="LocationFragment" >
         <argument
             android:name="latitude"

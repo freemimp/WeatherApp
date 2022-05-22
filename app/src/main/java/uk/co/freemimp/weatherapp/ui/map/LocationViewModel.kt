@@ -1,4 +1,4 @@
-package uk.co.freemimp.weatherapp.ui.main.map
+package uk.co.freemimp.weatherapp.ui.map
 
 import androidx.lifecycle.ViewModel
 

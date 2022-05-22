@@ -5,6 +5,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.adevinta.android.barista.assertion.BaristaVisibilityAssertions.assertDisplayed
 import com.adevinta.android.barista.interaction.BaristaClickInteractions.clickOn
 import com.adevinta.android.barista.interaction.BaristaEditTextInteractions.writeTo
+import com.adevinta.android.barista.interaction.BaristaSleepInteractions.sleep
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,11 +27,13 @@ import uk.co.freemimp.weatherapp.domain.model.DayWeather
 import uk.co.freemimp.weatherapp.domain.model.Forecast
 import uk.co.freemimp.weatherapp.domain.repository.ForecastRepository
 import uk.co.freemimp.weatherapp.domain.repository.ForecastRepositoryImpl
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlin.time.DurationUnit
 
 @UninstallModules(ViewModelModule::class)
 @HiltAndroidTest
-class MainFragmentTest {
+class MainFragmentTests {
 
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
@@ -64,6 +67,7 @@ class MainFragmentTest {
     @Test
     fun givenApiCallSucceeds_whenGettingForecastForLocation_thenForecastLocationNameAndForecastIsDisplayed() {
         launchActivity<MainActivity>().use {
+            sleep(5, TimeUnit.SECONDS)
             clickOn(R.id.getForecastForLocation)
 
             assertDisplayed(R.id.weatherLocationName)
@@ -72,6 +76,16 @@ class MainFragmentTest {
             assertDisplayed(R.id.day3Forecast)
             assertDisplayed(R.id.day4Forecast)
             assertDisplayed(R.id.day5Forecast)
+        }
+    }
+
+    @Test
+    fun givenLocationIsEnabled_whenNavigatingToMap_thenMapIsDisplayed() {
+        launchActivity<MainActivity>().use {
+            sleep(5, TimeUnit.SECONDS)
+            clickOn(R.id.openMapForLocation)
+
+            assertDisplayed(R.id.map)
         }
     }
 

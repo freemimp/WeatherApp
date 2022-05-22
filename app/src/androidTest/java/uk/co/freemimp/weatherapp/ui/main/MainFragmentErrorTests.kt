@@ -5,6 +5,8 @@ import androidx.test.rule.GrantPermissionRule
 import com.adevinta.android.barista.assertion.BaristaVisibilityAssertions.assertDisplayed
 import com.adevinta.android.barista.interaction.BaristaClickInteractions.clickOn
 import com.adevinta.android.barista.interaction.BaristaEditTextInteractions.writeTo
+import com.adevinta.android.barista.interaction.BaristaSleepInteractions
+import com.adevinta.android.barista.interaction.BaristaSleepInteractions.sleep
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,11 +25,12 @@ import uk.co.freemimp.weatherapp.di.ViewModelModule
 import uk.co.freemimp.weatherapp.domain.repository.ForecastRepository
 import uk.co.freemimp.weatherapp.domain.repository.ForecastRepositoryImpl
 import uk.co.freemimp.weatherapp.util.TestException
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @UninstallModules(ViewModelModule::class)
 @HiltAndroidTest
-class MainFragmentErrorTest {
+class MainFragmentErrorTests {
 
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
@@ -57,6 +60,7 @@ class MainFragmentErrorTest {
     @Test
     fun givenApiCallIsNotSuccessful_whenGettingForecastForLocation_thenErrorIsDisplayed() {
         launchActivity<MainActivity>().use {
+            sleep(5, TimeUnit.SECONDS)
             clickOn(R.id.getForecastForLocation)
 
             assertDisplayed(R.string.error_title)

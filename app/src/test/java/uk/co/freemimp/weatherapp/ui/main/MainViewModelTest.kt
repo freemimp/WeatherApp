@@ -61,7 +61,13 @@ internal class MainViewModelTest {
     private lateinit var showLoadingObserver: Observer<Event<Boolean>>
 
     @RelaxedMockK
+    private lateinit var navigateToMapObserver: Observer<Event<Pair<Float, Float>>>
+
+    @RelaxedMockK
     private lateinit var showErrorObserver: Observer<Event<Boolean>>
+
+    @RelaxedMockK
+    private lateinit var showLocationErrorObserver: Observer<Event<Boolean>>
 
     @BeforeEach
     fun setUp() {
@@ -72,7 +78,9 @@ internal class MainViewModelTest {
         sut.day4Forecast.observeForever(day4ForecastObserver)
         sut.day5Forecast.observeForever(day5ForecastObserver)
         sut.showLoading.observeForever(showLoadingObserver)
+        sut.navigateToMap.observeForever(navigateToMapObserver)
         sut.showError.observeForever(showErrorObserver)
+        sut.showLocationError.observeForever(showLocationErrorObserver)
     }
 
     @Nested
@@ -201,6 +209,11 @@ internal class MainViewModelTest {
                 day5ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather5), it) })
 
                 showLoadingObserver.onChanged(withArg { assertFalse(it.peekContent()) })
+                showLocationErrorObserver.onChanged(withArg {
+                    assertFalse(
+                        it.peekContent()
+                    )
+                })
             }
         }
 
@@ -229,6 +242,58 @@ internal class MainViewModelTest {
                     )
                 })
                 showLoadingObserver.onChanged(withArg { assertFalse(it.peekContent()) })
+            }
+        }
+
+        @Test
+        fun `when latitude and longitude are null, then notify correct observers`() {
+            sut.showForecastForCurrentLocation(latitude = null, longitude = null)
+
+            coVerifySequence {
+                showLocationErrorObserver.onChanged(withArg {
+                    assertTrue(
+                        it.peekContent()
+                    )
+                })
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("given navigateToMapFragment was invoked, ")
+    inner class NavigateToMapFragment {
+
+        private val latitude = 1.2345
+        private val longitude = 6.7890
+
+        @Test
+        fun `when latitude and longitude is not null, then notify navigateToMap observer`() {
+            sut.navigateToMapFragment(latitude, longitude)
+            coVerifySequence {
+                navigateToMapObserver.onChanged(withArg {
+                    assertEquals(
+                        Pair(latitude.toFloat(), longitude.toFloat()),
+                        it.peekContent()
+                    )
+                })
+                showLocationErrorObserver.onChanged(withArg {
+                    assertFalse(
+                        it.peekContent()
+                    )
+                })
+            }
+        }
+
+        @Test
+        fun `when latitude and longitude are null, then notify howLocationError observer`() {
+            sut.navigateToMapFragment(latitude = null, longitude = null)
+
+            coVerifySequence {
+                showLocationErrorObserver.onChanged(withArg {
+                    assertTrue(
+                        it.peekContent()
+                    )
+                })
             }
         }
     }

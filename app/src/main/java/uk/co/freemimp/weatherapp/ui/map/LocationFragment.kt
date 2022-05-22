@@ -1,4 +1,4 @@
-package uk.co.freemimp.weatherapp.ui.main.map
+package uk.co.freemimp.weatherapp.ui.map
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,8 +16,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import uk.co.freemimp.weatherapp.databinding.FragmentLocationBinding
 
 class LocationFragment : Fragment(), OnMapReadyCallback {
-
-    private lateinit var viewModel: LocationViewModel
 
     private var _binding: FragmentLocationBinding? = null
     private val binding
@@ -40,17 +38,22 @@ class LocationFragment : Fragment(), OnMapReadyCallback {
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
     override fun onMapReady(googleMap: GoogleMap) {
-        val myLocation = LatLng(args.latitude.toDouble(), args.longitude.toDouble())
+        val userLocation = LatLng(args.latitude.toDouble(), args.longitude.toDouble())
         val cameraPosition = CameraPosition.Builder()
-            .target(myLocation)
+            .target(userLocation)
             .zoom(DEFAULT_ZOOM)
             .build()
         googleMap.addMarker(
-            MarkerOptions().position(myLocation)
+            MarkerOptions().position(userLocation)
                 .title("YourLocation")
         )
 
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 }
 

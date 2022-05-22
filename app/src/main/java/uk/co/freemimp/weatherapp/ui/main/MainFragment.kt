@@ -73,11 +73,12 @@ class MainFragment : Fragment() {
                 ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
                 if (isGranted) {
-                    checkAndAskForPermission()
+                    getCurrentLocation()
                 } else {
                     showLocationRationaleToast()
                 }
             }
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -85,6 +86,7 @@ class MainFragment : Fragment() {
         setupRecyclerViews()
         setupButtons()
         setupObservables()
+        checkAndAskForPermission()
     }
 
     private fun checkLocationSettings() {
@@ -99,7 +101,7 @@ class MainFragment : Fragment() {
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener {
-            checkAndAskForPermission()
+            getCurrentLocation()
         }
 
         task.addOnFailureListener { exception ->
@@ -157,35 +159,16 @@ class MainFragment : Fragment() {
     }
 
     private fun setupButtons() {
-        binding.getForecastForLocation.setOnClickListener {
-            checkLocationSettings()
-            if (location != null) {
-                location?.let {
-                    viewModel.showForecastForCurrentLocation(it.latitude, it.longitude)
-                }
-            } else {
-                showLocationErrorDialog(
-                    R.string.location_error_title,
-                    R.string.location_error_message
-                )
-            }
-        }
-
         binding.getForecast.setOnClickListener {
             viewModel.showForecastForTheCity(binding.cityForForecast.text.toString())
         }
+        binding.getForecastForLocation.setOnClickListener {
+            checkLocationSettings()
+            viewModel.showForecastForCurrentLocation(location?.latitude, location?.longitude)
+        }
         binding.openMapForLocation.setOnClickListener {
-            if (location != null) {
-                location?.let {
-                    val action =MainFragmentDirections.actionMainFragmentToLocationFragment(it.latitude.toFloat(), it.longitude.toFloat())
-                    findNavController().navigate(action)
-                }
-            } else {
-                showLocationErrorDialog(
-                    R.string.location_error_title,
-                    R.string.location_error_message
-                )
-            }
+            checkLocationSettings()
+            viewModel.navigateToMapFragment(location?.latitude, location?.longitude)
         }
     }
 
@@ -200,6 +183,24 @@ class MainFragment : Fragment() {
             } else {
                 errorDialog?.dismiss()
             }
+        })
+        viewModel.showLocationError.observe(viewLifecycleOwner, EventObserver {
+            if (it) {
+                showLocationErrorDialog(
+                    R.string.location_error_title,
+                    R.string.location_error_message
+                )
+            } else {
+                locationErrorDialog?.dismiss()
+            }
+        })
+
+        viewModel.navigateToMap.observe(viewLifecycleOwner, EventObserver {
+            val action = MainFragmentDirections.actionMainFragmentToLocationFragment(
+                it.first,
+                it.second
+            )
+            findNavController().navigate(action)
         })
 
         viewModel.weatherLocationName.observe(viewLifecycleOwner) {
