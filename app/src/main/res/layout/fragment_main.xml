@@ -40,6 +40,15 @@
             app:layout_constraintStart_toStartOf="@+id/getForecast"
             app:layout_constraintTop_toBottomOf="@+id/getForecast" />
 
+        <Button
+            android:id="@+id/openMapForLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/open_map_for_my_location"
+            app:layout_constraintEnd_toEndOf="@+id/getForecastForLocation"
+            app:layout_constraintStart_toStartOf="@+id/getForecastForLocation"
+            app:layout_constraintTop_toBottomOf="@+id/getForecastForLocation" />
+
         <ProgressBar
             android:id="@+id/loading"
             android:layout_width="wrap_content"
@@ -47,7 +56,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/getForecastForLocation" />
+            app:layout_constraintTop_toBottomOf="@id/openMapForLocation" />
 
         <TextView
             android:id="@+id/weatherLocationName"
@@ -55,9 +64,9 @@
             tools:text="London"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/getForecastForLocation"
-            app:layout_constraintStart_toStartOf="@id/getForecastForLocation"
-            app:layout_constraintEnd_toEndOf="@id/getForecastForLocation"/>
+            app:layout_constraintTop_toBottomOf="@id/openMapForLocation"
+            app:layout_constraintStart_toStartOf="@id/openMapForLocation"
+            app:layout_constraintEnd_toEndOf="@id/openMapForLocation"/>
 
         <include
             android:id="@+id/day1Forecast"

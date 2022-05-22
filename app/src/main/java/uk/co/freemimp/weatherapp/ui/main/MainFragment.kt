@@ -17,11 +17,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
 import uk.co.freemimp.weatherapp.R
@@ -63,32 +65,31 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setLocationPermissionRequest()
+        fusedLocationClient =
+            LocationServices.getFusedLocationProviderClient(requireContext())
+
+        locationPermissionRequest =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    getCurrentLocation()
+                } else {
+                    showLocationRationaleToast()
+                }
+            }
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerViews()
-        checkAndAskForPermission()
         setupButtons()
         setupObservables()
+        checkAndAskForPermission()
     }
 
-    private fun setLocationPermissionRequest() {
-         locationPermissionRequest =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    fusedLocationClient =
-                        LocationServices.getFusedLocationProviderClient(requireContext())
-                } else {
-                    showLocationRationaleToast()
-                }
-            }
-    }
-
-   private fun createLocationRequest() {
+    private fun checkLocationSettings() {
         val locationRequest = LocationRequest.create().apply {
             interval = 10000
             fastestInterval = 5000
@@ -100,16 +101,16 @@ class MainFragment : Fragment() {
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener {
-            fusedLocationClient =
-                LocationServices.getFusedLocationProviderClient(requireContext())
-            setupLastLocation()
+            getCurrentLocation()
         }
 
         task.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException){
+            if (exception is ResolvableApiException) {
                 try {
-                    exception.startResolutionForResult(requireActivity(),
-                        REQUEST_CHECK_SETTINGS)
+                    exception.startResolutionForResult(
+                        requireActivity(),
+                        REQUEST_CHECK_SETTINGS
+                    )
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                 }
@@ -129,55 +130,45 @@ class MainFragment : Fragment() {
         when {
             ContextCompat.checkSelfPermission(
                 requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                fusedLocationClient =
-                    LocationServices.getFusedLocationProviderClient(requireContext())
+                getCurrentLocation()
             }
-            shouldShowRequestPermissionRationale("Coarse Location permission") -> {
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 showLocationRationaleToast()
                 locationPermissionRequest.launch(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
             else -> {
                 locationPermissionRequest.launch(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
         }
-        setupLastLocation()
     }
 
     @SuppressLint("MissingPermission")
-    private fun setupLastLocation() {
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    this.location = location
-                }
-            }
-            .addOnFailureListener {
-                createLocationRequest()
-                showLocationErrorDialog(R.string.location_error_title, R.string.location_error_message)
-            }
+    private fun getCurrentLocation() {
+        fusedLocationClient.getCurrentLocation(
+            LocationRequest.PRIORITY_HIGH_ACCURACY,
+            CancellationTokenSource().token
+        ).addOnSuccessListener {
+            location = it
+        }
     }
 
     private fun setupButtons() {
-        binding.getForecastForLocation.setOnClickListener {
-            createLocationRequest()
-            if (location != null) {
-                location?.let {
-                    viewModel.showForecastForCurrentLocation(it.latitude, it.longitude)
-                }
-            } else {
-                showLocationErrorDialog(R.string.location_error_title, R.string.location_error_message)
-
-            }
-        }
-
         binding.getForecast.setOnClickListener {
             viewModel.showForecastForTheCity(binding.cityForForecast.text.toString())
+        }
+        binding.getForecastForLocation.setOnClickListener {
+            checkLocationSettings()
+            viewModel.showForecastForCurrentLocation(location?.latitude, location?.longitude)
+        }
+        binding.openMapForLocation.setOnClickListener {
+            checkLocationSettings()
+            viewModel.navigateToMapFragment(location?.latitude, location?.longitude)
         }
     }
 
@@ -192,6 +183,24 @@ class MainFragment : Fragment() {
             } else {
                 errorDialog?.dismiss()
             }
+        })
+        viewModel.showLocationError.observe(viewLifecycleOwner, EventObserver {
+            if (it) {
+                showLocationErrorDialog(
+                    R.string.location_error_title,
+                    R.string.location_error_message
+                )
+            } else {
+                locationErrorDialog?.dismiss()
+            }
+        })
+
+        viewModel.navigateToMap.observe(viewLifecycleOwner, EventObserver {
+            val action = MainFragmentDirections.actionMainFragmentToLocationFragment(
+                it.first,
+                it.second
+            )
+            findNavController().navigate(action)
         })
 
         viewModel.weatherLocationName.observe(viewLifecycleOwner) {
