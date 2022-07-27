@@ -5,7 +5,6 @@ import androidx.test.rule.GrantPermissionRule
 import com.adevinta.android.barista.assertion.BaristaVisibilityAssertions.assertDisplayed
 import com.adevinta.android.barista.interaction.BaristaClickInteractions.clickOn
 import com.adevinta.android.barista.interaction.BaristaEditTextInteractions.writeTo
-import com.adevinta.android.barista.interaction.BaristaSleepInteractions
 import com.adevinta.android.barista.interaction.BaristaSleepInteractions.sleep
 import dagger.Module
 import dagger.Provides
@@ -21,12 +20,12 @@ import org.junit.Rule
 import org.junit.Test
 import uk.co.freemimp.weatherapp.MainActivity
 import uk.co.freemimp.weatherapp.R
-import uk.co.freemimp.weatherapp.di.ViewModelModule
-import uk.co.freemimp.weatherapp.domain.repository.ForecastRepository
-import uk.co.freemimp.weatherapp.domain.repository.ForecastRepositoryImpl
+import uk.co.freemimp.data.di.ViewModelModule
 import uk.co.freemimp.weatherapp.util.TestException
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import uk.co.freemimp.core.repository.ForecastRepository
+import uk.co.freemimp.data.ForecastRepositoryImpl
 
 @UninstallModules(ViewModelModule::class)
 @HiltAndroidTest

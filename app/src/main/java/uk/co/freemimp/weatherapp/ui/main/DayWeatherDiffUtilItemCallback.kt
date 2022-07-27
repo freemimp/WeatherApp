@@ -1,7 +1,8 @@
 package uk.co.freemimp.weatherapp.ui.main
 
 import androidx.recyclerview.widget.DiffUtil
-import uk.co.freemimp.weatherapp.domain.model.DayWeather
+import uk.co.freemimp.core.model.DayWeather
+
 
 object DayWeatherDiffUtilItemCallback : DiffUtil.ItemCallback<DayWeather>() {
     override fun areItemsTheSame(

@@ -17,18 +17,24 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import uk.co.freemimp.weatherapp.R
 import uk.co.freemimp.weatherapp.databinding.FragmentMainBinding
-import uk.co.freemimp.weatherapp.mvvm.EventObserver
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
@@ -173,64 +179,92 @@ class MainFragment : Fragment() {
     }
 
     private fun setupObservables() {
-        viewModel.showLoading.observe(viewLifecycleOwner, EventObserver {
-            binding.loading.isVisible = it
-        })
-
-        viewModel.showError.observe(viewLifecycleOwner, EventObserver {
-            if (it) {
-                showErrorDialog(R.string.error_title, R.string.error_message)
-            } else {
-                errorDialog?.dismiss()
-            }
-        })
-        viewModel.showLocationError.observe(viewLifecycleOwner, EventObserver {
-            if (it) {
-                showLocationErrorDialog(
-                    R.string.location_error_title,
-                    R.string.location_error_message
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.navigateToMap.collect {
+                val action = MainFragmentDirections.actionMainFragmentToLocationFragment(
+                    it.first,
+                    it.second
                 )
-            } else {
-                locationErrorDialog?.dismiss()
+                findNavController().navigate(action)
             }
-        })
-
-        viewModel.navigateToMap.observe(viewLifecycleOwner, EventObserver {
-            val action = MainFragmentDirections.actionMainFragmentToLocationFragment(
-                it.first,
-                it.second
-            )
-            findNavController().navigate(action)
-        })
-
-        viewModel.weatherLocationName.observe(viewLifecycleOwner) {
-            binding.weatherLocationName.text = getString(R.string.weather_location_name, it)
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.showLocationError.collect {
+                if (it) {
+                    showLocationErrorDialog(
+                        R.string.location_error_title,
+                        R.string.location_error_message
+                    )
+                } else {
+                    locationErrorDialog?.dismiss()
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.showLoading.collect {
+                binding.loading.isVisible = it
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.showError.collect {
+                if (it) {
+                    showErrorDialog(R.string.error_title, R.string.error_message)
+                } else {
+                    errorDialog?.dismiss()
+                }
+            }
         }
 
-        viewModel.day1Forecast.observe(viewLifecycleOwner) { weather ->
-            binding.day1Forecast.dayDate.text =
-                getString(R.string.forecast_date, weather.first().date)
-            day1Adapter.submitList(weather)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.weatherLocationName.collect {
+                binding.weatherLocationName.text = getString(R.string.weather_location_name, it)
+            }
         }
-        viewModel.day2Forecast.observe(viewLifecycleOwner) { weather ->
-            binding.day2Forecast.dayDate.text =
-                getString(R.string.forecast_date, weather.first().date)
-            day2Adapter.submitList(weather)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.day1Forecast.collect { weather ->
+                if (weather.isNotEmpty()) {
+                    binding.day1Forecast.dayDate.text =
+                        getString(R.string.forecast_date, weather.first().date)
+                    day1Adapter.submitList(weather)
+                }
+            }
         }
-        viewModel.day3Forecast.observe(viewLifecycleOwner) { weather ->
-            binding.day3Forecast.dayDate.text =
-                getString(R.string.forecast_date, weather.first().date)
-            day3Adapter.submitList(weather)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.day2Forecast.collect { weather ->
+                if (weather.isNotEmpty()) {
+                    binding.day2Forecast.dayDate.text =
+                        getString(R.string.forecast_date, weather.first().date)
+                    day2Adapter.submitList(weather)
+                }
+            }
         }
-        viewModel.day4Forecast.observe(viewLifecycleOwner) { weather ->
-            binding.day4Forecast.dayDate.text =
-                getString(R.string.forecast_date, weather.first().date)
-            day4Adapter.submitList(weather)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.day3Forecast.collect { weather ->
+                if (weather.isNotEmpty()) {
+                    binding.day3Forecast.dayDate.text =
+                        getString(R.string.forecast_date, weather.first().date)
+                    day3Adapter.submitList(weather)
+                }
+            }
         }
-        viewModel.day5Forecast.observe(viewLifecycleOwner) { weather ->
-            binding.day5Forecast.dayDate.text =
-                getString(R.string.forecast_date, weather.first().date)
-            day5Adapter.submitList(weather)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.day4Forecast.collect { weather ->
+                if (weather.isNotEmpty()) {
+                    binding.day4Forecast.dayDate.text =
+                        getString(R.string.forecast_date, weather.first().date)
+                    day4Adapter.submitList(weather)
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.day5Forecast.collect { weather ->
+                if (weather.isNotEmpty()) {
+                    binding.day5Forecast.dayDate.text =
+                        getString(R.string.forecast_date, weather.first().date)
+                    day5Adapter.submitList(weather)
+                }
+            }
         }
     }
 

@@ -1,87 +1,44 @@
 package uk.co.freemimp.weatherapp.ui.main
 
-import androidx.lifecycle.Observer
+import app.cash.turbine.test
 import io.mockk.coEvery
-import io.mockk.coVerifySequence
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import uk.co.freemimp.weatherapp.domain.model.DayWeather
-import uk.co.freemimp.weatherapp.domain.model.Forecast
-import uk.co.freemimp.weatherapp.domain.usecase.GetForecastForCityUseCase
-import uk.co.freemimp.weatherapp.domain.usecase.GetForecastForLocationUseCase
-import uk.co.freemimp.weatherapp.domain.usecase.GetLocationFormattedUseCase
-import uk.co.freemimp.weatherapp.mvvm.Event
-import uk.co.freemimp.weatherapp.utils.InstantTaskExecutorExtension
-import uk.co.freemimp.weatherapp.utils.TestException
+import uk.co.freemimp.commontest.utils.TestCoroutineExtension
+import uk.co.freemimp.commontest.utils.TestException
+import uk.co.freemimp.core.model.DayWeather
+import uk.co.freemimp.core.model.Forecast
 
-@ExtendWith(MockKExtension::class, InstantTaskExecutorExtension::class)
+@ExperimentalCoroutinesApi
+@ExperimentalTime
+@ExtendWith(MockKExtension::class, TestCoroutineExtension::class)
 internal class MainViewModelTest {
 
     @MockK
-    private lateinit var getForecastForCityUseCase: GetForecastForCityUseCase
+    private lateinit var getForecastForCityUseCase: uk.co.freemimp.domain.usecase.GetForecastForCityUseCase
 
     @MockK
-    private lateinit var getForecastForLocationUseCase: GetForecastForLocationUseCase
+    private lateinit var getForecastForLocationUseCase: uk.co.freemimp.domain.usecase.GetForecastForLocationUseCase
 
     @MockK
-    private lateinit var getLocationFormattedUseCase: GetLocationFormattedUseCase
+    private lateinit var getLocationFormattedUseCase: uk.co.freemimp.domain.usecase.GetLocationFormattedUseCase
 
     @InjectMockKs
     private lateinit var sut: MainViewModel
-
-    @RelaxedMockK
-    private lateinit var weatherLocationNameObserver: Observer<String>
-
-    @RelaxedMockK
-    private lateinit var day1ForecastObserver: Observer<List<DayWeather>>
-
-    @RelaxedMockK
-    private lateinit var day2ForecastObserver: Observer<List<DayWeather>>
-
-    @RelaxedMockK
-    private lateinit var day3ForecastObserver: Observer<List<DayWeather>>
-
-    @RelaxedMockK
-    private lateinit var day4ForecastObserver: Observer<List<DayWeather>>
-
-    @RelaxedMockK
-    private lateinit var day5ForecastObserver: Observer<List<DayWeather>>
-
-    @RelaxedMockK
-    private lateinit var showLoadingObserver: Observer<Event<Boolean>>
-
-    @RelaxedMockK
-    private lateinit var navigateToMapObserver: Observer<Event<Pair<Float, Float>>>
-
-    @RelaxedMockK
-    private lateinit var showErrorObserver: Observer<Event<Boolean>>
-
-    @RelaxedMockK
-    private lateinit var showLocationErrorObserver: Observer<Event<Boolean>>
-
-    @BeforeEach
-    fun setUp() {
-        sut.weatherLocationName.observeForever(weatherLocationNameObserver)
-        sut.day1Forecast.observeForever(day1ForecastObserver)
-        sut.day2Forecast.observeForever(day2ForecastObserver)
-        sut.day3Forecast.observeForever(day3ForecastObserver)
-        sut.day4Forecast.observeForever(day4ForecastObserver)
-        sut.day5Forecast.observeForever(day5ForecastObserver)
-        sut.showLoading.observeForever(showLoadingObserver)
-        sut.navigateToMap.observeForever(navigateToMapObserver)
-        sut.showError.observeForever(showErrorObserver)
-        sut.showLocationError.observeForever(showLocationErrorObserver)
-    }
 
     @Nested
     @DisplayName("given showForecastForTheCity was invoked, ")
@@ -91,62 +48,77 @@ internal class MainViewModelTest {
 
         @Test
         fun `when use case is successful, then notify correct observers`() {
+            runTest {
+                val dayWeather1 = mockk<DayWeather>()
+                val dayWeather2 = mockk<DayWeather>()
+                val dayWeather3 = mockk<DayWeather>()
+                val dayWeather4 = mockk<DayWeather>()
+                val dayWeather5 = mockk<DayWeather>()
+                val forecast = mockk<Forecast> {
+                    every { day1 } returns listOf(dayWeather1)
+                    every { day2 } returns listOf(dayWeather2)
+                    every { day3 } returns listOf(dayWeather3)
+                    every { day4 } returns listOf(dayWeather4)
+                    every { day5 } returns listOf(dayWeather5)
+                }
+                coEvery { getForecastForCityUseCase.execute(city = city) } returns forecast
 
-            val dayWeather1 = mockk<DayWeather>()
-            val dayWeather2 = mockk<DayWeather>()
-            val dayWeather3 = mockk<DayWeather>()
-            val dayWeather4 = mockk<DayWeather>()
-            val dayWeather5 = mockk<DayWeather>()
-            val forecast = mockk<Forecast>() {
-                every { day1 } returns listOf(dayWeather1)
-                every { day2 } returns listOf(dayWeather2)
-                every { day3 } returns listOf(dayWeather3)
-                every { day4 } returns listOf(dayWeather4)
-                every { day5 } returns listOf(dayWeather5)
-            }
-            coEvery { getForecastForCityUseCase.execute(city = city) } returns forecast
+                sut.showForecastForTheCity(city)
 
-            sut.showForecastForTheCity(city)
+                sut.showError.test {
+                    sut.showForecastForTheCity(city)
 
-            coVerifySequence {
-                showErrorObserver.onChanged(withArg {
                     assertFalse(
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
-                showLoadingObserver.onChanged(withArg { assertTrue(it.peekContent()) })
-                getForecastForCityUseCase.execute(city)
-                weatherLocationNameObserver.onChanged(withArg { assertEquals(city, it) })
-                day1ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather1), it) })
-                day2ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather2), it) })
-                day3ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather3), it) })
-                day4ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather4), it) })
-                day5ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather5), it) })
 
-                showLoadingObserver.onChanged(withArg { assertFalse(it.peekContent()) })
+                }
+                sut.showLoading.test {
+                    sut.showForecastForTheCity(city)
+
+                    assertTrue(awaitItem())
+                    assertFalse(awaitItem())
+                }
+                sut.weatherLocationName.test { assertEquals(city, awaitItem()) }
+                sut.day1Forecast.test { assertEquals(listOf(dayWeather1), awaitItem()) }
+                sut.day2Forecast.test { assertEquals(listOf(dayWeather2), awaitItem()) }
+                sut.day3Forecast.test { assertEquals(listOf(dayWeather3), awaitItem()) }
+                sut.day4Forecast.test { assertEquals(listOf(dayWeather4), awaitItem()) }
+                sut.day5Forecast.test { assertEquals(listOf(dayWeather5), awaitItem()) }
+
+                coVerify {
+                    getForecastForCityUseCase.execute(city)
+                }
             }
         }
 
         @Test
         fun `when use case is NOT successful, then notify correct observers`() {
-            coEvery { getForecastForCityUseCase.execute(city = city) } throws TestException
+            runTest {
+                coEvery { getForecastForCityUseCase.execute(city = city) } throws TestException
 
-            sut.showForecastForTheCity(city)
+                sut.showError.test {
+                    sut.showForecastForTheCity(city)
 
-            coVerifySequence {
-                showErrorObserver.onChanged(withArg {
                     assertFalse(
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
-                showLoadingObserver.onChanged(withArg { assertTrue(it.peekContent()) })
-                getForecastForCityUseCase.execute(city = city)
-                showErrorObserver.onChanged(withArg {
                     assertTrue(
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
-                showLoadingObserver.onChanged(withArg { assertFalse(it.peekContent()) })
+                }
+                sut.showLoading.test {
+                    sut.showForecastForTheCity(city)
+
+                    assertTrue(awaitItem())
+                    assertFalse(awaitItem())
+                }
+
+
+                coVerify {
+                    getForecastForCityUseCase.execute(city = city)
+                }
+
             }
         }
     }
@@ -160,101 +132,108 @@ internal class MainViewModelTest {
 
         @Test
         fun `when use case is successful, then notify correct observers`() {
-            val formattedLocation = "$latitude ° N, $longitude ° E"
-            val dayWeather1 = mockk<DayWeather>()
-            val dayWeather2 = mockk<DayWeather>()
-            val dayWeather3 = mockk<DayWeather>()
-            val dayWeather4 = mockk<DayWeather>()
-            val dayWeather5 = mockk<DayWeather>()
-            val forecast = mockk<Forecast>() {
-                every { day1 } returns listOf(dayWeather1)
-                every { day2 } returns listOf(dayWeather2)
-                every { day3 } returns listOf(dayWeather3)
-                every { day4 } returns listOf(dayWeather4)
-                every { day5 } returns listOf(dayWeather5)
-            }
-            every {
-                getLocationFormattedUseCase.execute(
-                    latitude = latitude,
-                    longitude = longitude
-                )
-            } returns formattedLocation
-            coEvery {
-                getForecastForLocationUseCase.execute(
-                    latitude = latitude,
-                    longitude = longitude
-                )
-            } returns forecast
+            runTest {
+                val formattedLocation = "$latitude ° N, $longitude ° E"
+                val dayWeather1 = mockk<DayWeather>()
+                val dayWeather2 = mockk<DayWeather>()
+                val dayWeather3 = mockk<DayWeather>()
+                val dayWeather4 = mockk<DayWeather>()
+                val dayWeather5 = mockk<DayWeather>()
+                val forecast = mockk<Forecast> {
+                    every { day1 } returns listOf(dayWeather1)
+                    every { day2 } returns listOf(dayWeather2)
+                    every { day3 } returns listOf(dayWeather3)
+                    every { day4 } returns listOf(dayWeather4)
+                    every { day5 } returns listOf(dayWeather5)
+                }
+                every {
+                    getLocationFormattedUseCase.execute(
+                        latitude = latitude,
+                        longitude = longitude
+                    )
+                } returns formattedLocation
+                coEvery {
+                    getForecastForLocationUseCase.execute(
+                        latitude = latitude,
+                        longitude = longitude
+                    )
+                } returns forecast
 
-            sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
+                sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
 
-            coVerifySequence {
-                showErrorObserver.onChanged(withArg {
+                sut.showError.test {
+                    sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
+
                     assertFalse(
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
-                showLoadingObserver.onChanged(withArg { assertTrue(it.peekContent()) })
-                getForecastForLocationUseCase.execute(latitude, longitude)
-                weatherLocationNameObserver.onChanged(withArg {
-                    assertEquals(
-                        formattedLocation,
-                        it
-                    )
-                })
-                day1ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather1), it) })
-                day2ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather2), it) })
-                day3ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather3), it) })
-                day4ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather4), it) })
-                day5ForecastObserver.onChanged(withArg { assertEquals(listOf(dayWeather5), it) })
+                }
+                sut.showLoading.test {
+                    sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
 
-                showLoadingObserver.onChanged(withArg { assertFalse(it.peekContent()) })
-                showLocationErrorObserver.onChanged(withArg {
+                    assertTrue(awaitItem())
+                    assertFalse(awaitItem())
+                }
+
+                sut.weatherLocationName.test { assertEquals(formattedLocation, awaitItem()) }
+                sut.day1Forecast.test { assertEquals(listOf(dayWeather1), awaitItem()) }
+                sut.day2Forecast.test { assertEquals(listOf(dayWeather2), awaitItem()) }
+                sut.day3Forecast.test { assertEquals(listOf(dayWeather3), awaitItem()) }
+                sut.day4Forecast.test { assertEquals(listOf(dayWeather4), awaitItem()) }
+                sut.day5Forecast.test { assertEquals(listOf(dayWeather5), awaitItem()) }
+
+                sut.showLocationError.test {
+                    sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
+
                     assertFalse(
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
+                }
+
+                coVerify {
+                    getForecastForLocationUseCase.execute(latitude, longitude)
+                }
             }
         }
 
         @Test
         fun `when use case is NOT successful, then notify correct observers`() {
-            coEvery {
-                getForecastForLocationUseCase.execute(
-                    latitude = latitude,
-                    longitude = longitude
-                )
-            } throws TestException
-
-            sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
-
-            coVerifySequence {
-                showErrorObserver.onChanged(withArg {
-                    assertFalse(
-                        it.peekContent()
+            runTest {
+                coEvery {
+                    getForecastForLocationUseCase.execute(
+                        latitude = latitude,
+                        longitude = longitude
                     )
-                })
-                showLoadingObserver.onChanged(withArg { assertTrue(it.peekContent()) })
-                getForecastForLocationUseCase.execute(latitude, longitude)
-                showErrorObserver.onChanged(withArg {
-                    assertTrue(
-                        it.peekContent()
-                    )
-                })
-                showLoadingObserver.onChanged(withArg { assertFalse(it.peekContent()) })
+                } throws TestException
+
+                sut.showError.test {
+                    sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
+
+                    assertFalse(awaitItem())
+                    assertTrue(awaitItem())
+
+                }
+                sut.showLoading.test {
+                    sut.showForecastForCurrentLocation(latitude = latitude, longitude = longitude)
+
+                    assertTrue(awaitItem())
+                    assertFalse(awaitItem())
+                }
+
+
+                coVerify {
+                    getForecastForLocationUseCase.execute(latitude, longitude)
+                }
             }
         }
 
         @Test
         fun `when latitude and longitude are null, then notify correct observers`() {
-            sut.showForecastForCurrentLocation(latitude = null, longitude = null)
-
-            coVerifySequence {
-                showLocationErrorObserver.onChanged(withArg {
-                    assertTrue(
-                        it.peekContent()
-                    )
-                })
+            runTest {
+                sut.showLocationError.test {
+                    sut.showForecastForCurrentLocation(latitude = null, longitude = null)
+                    assertTrue(awaitItem())
+                }
             }
         }
     }
@@ -268,32 +247,33 @@ internal class MainViewModelTest {
 
         @Test
         fun `when latitude and longitude is not null, then notify navigateToMap observer`() {
-            sut.navigateToMapFragment(latitude, longitude)
-            coVerifySequence {
-                navigateToMapObserver.onChanged(withArg {
+            runTest {
+                sut.navigateToMap.test {
+                    sut.navigateToMapFragment(latitude, longitude)
                     assertEquals(
                         Pair(latitude.toFloat(), longitude.toFloat()),
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
-                showLocationErrorObserver.onChanged(withArg {
+                }
+                sut.showLocationError.test {
+                    sut.navigateToMapFragment(latitude, longitude)
                     assertFalse(
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
+                }
             }
         }
 
         @Test
         fun `when latitude and longitude are null, then notify howLocationError observer`() {
-            sut.navigateToMapFragment(latitude = null, longitude = null)
+            runTest {
+                sut.showLocationError.test {
+                    sut.navigateToMapFragment(latitude = null, longitude = null)
 
-            coVerifySequence {
-                showLocationErrorObserver.onChanged(withArg {
                     assertTrue(
-                        it.peekContent()
+                        awaitItem()
                     )
-                })
+                }
             }
         }
     }

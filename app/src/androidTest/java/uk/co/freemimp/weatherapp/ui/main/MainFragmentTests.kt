@@ -13,7 +13,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.testing.TestInstallIn
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -22,14 +21,13 @@ import org.junit.Rule
 import org.junit.Test
 import uk.co.freemimp.weatherapp.MainActivity
 import uk.co.freemimp.weatherapp.R
-import uk.co.freemimp.weatherapp.di.ViewModelModule
-import uk.co.freemimp.weatherapp.domain.model.DayWeather
-import uk.co.freemimp.weatherapp.domain.model.Forecast
-import uk.co.freemimp.weatherapp.domain.repository.ForecastRepository
-import uk.co.freemimp.weatherapp.domain.repository.ForecastRepositoryImpl
+import uk.co.freemimp.data.di.ViewModelModule
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import kotlin.time.DurationUnit
+import uk.co.freemimp.core.model.DayWeather
+import uk.co.freemimp.core.model.Forecast
+import uk.co.freemimp.core.repository.ForecastRepository
+import uk.co.freemimp.data.ForecastRepositoryImpl
 
 @UninstallModules(ViewModelModule::class)
 @HiltAndroidTest
