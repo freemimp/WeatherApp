@@ -2,6 +2,7 @@ package uk.co.freemimp.weatherapp.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -21,6 +22,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import uk.co.freemimp.weatherapp.R
@@ -70,7 +74,6 @@ class MainFragment : Fragment() {
                     showLocationRationaleToast()
                 }
             }
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -79,6 +82,35 @@ class MainFragment : Fragment() {
         setupButtons()
         setupObservables()
         checkAndAskForPermission()
+    }
+
+    private fun checkLocationSettings() {
+        val locationRequest = LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+        val client: SettingsClient = LocationServices.getSettingsClient(requireContext())
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener {
+            getCurrentLocation()
+        }
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    exception.startResolutionForResult(
+                        requireActivity(),
+                        REQUEST_CHECK_SETTINGS
+                    )
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error.
+                }
+            }
+        }
     }
 
     private fun showLocationRationaleToast() {
@@ -125,9 +157,11 @@ class MainFragment : Fragment() {
             viewModel.showForecastForTheCity(binding.cityForForecast.text.toString())
         }
         binding.getForecastForLocation.setOnClickListener {
+            checkLocationSettings()
             viewModel.showForecastForCurrentLocation(location?.latitude, location?.longitude)
         }
         binding.openMapForLocation.setOnClickListener {
+            checkLocationSettings()
             viewModel.navigateToMapFragment(location?.latitude, location?.longitude)
         }
     }
@@ -277,3 +311,5 @@ class MainFragment : Fragment() {
         super.onDestroyView()
     }
 }
+
+private const val REQUEST_CHECK_SETTINGS = 479
