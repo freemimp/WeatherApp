@@ -17,6 +17,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -26,9 +28,13 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import uk.co.freemimp.weatherapp.R
 import uk.co.freemimp.weatherapp.databinding.FragmentMainBinding
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
@@ -53,6 +59,7 @@ class MainFragment : Fragment() {
     private lateinit var locationPermissionRequest: ActivityResultLauncher<String>
 
     private var location: Location? = null
+    private var locationFlow: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,9 +93,9 @@ class MainFragment : Fragment() {
 
     private fun checkLocationSettings() {
         val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = TimeUnit.SECONDS.toMillis(10)
+            fastestInterval = TimeUnit.SECONDS.toMillis(5)
+            priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY
         }
         val builder = LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
@@ -143,13 +150,13 @@ class MainFragment : Fragment() {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.getLocation.collect {
-                location = it
+        locationFlow = viewModel.getLocation
+            .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+            .onEach {
+               location = it
             }
-        }
+            .launchIn(lifecycleScope)
     }
 
     private fun setupButtons() {
@@ -307,6 +314,7 @@ class MainFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        locationFlow?.cancel()
         _binding = null
         super.onDestroyView()
     }

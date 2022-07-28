@@ -39,10 +39,10 @@ class SharedLocationManager constructor(
         LocationServices.getFusedLocationProviderClient(context)
 
     private val locationRequest = LocationRequest.create().apply {
-        interval = TimeUnit.SECONDS.toMillis(1)
+        interval = TimeUnit.SECONDS.toMillis(5)
         fastestInterval = TimeUnit.SECONDS.toMillis(1)
-        maxWaitTime = TimeUnit.SECONDS.toMillis(1)
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        maxWaitTime = TimeUnit.SECONDS.toMillis(5)
+        priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY
     }
 
     @SuppressLint("MissingPermission")
