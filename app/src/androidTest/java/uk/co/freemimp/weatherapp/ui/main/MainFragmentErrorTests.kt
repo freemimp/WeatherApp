@@ -59,7 +59,6 @@ class MainFragmentErrorTests {
     @Test
     fun givenApiCallIsNotSuccessful_whenGettingForecastForLocation_thenErrorIsDisplayed() {
         launchActivity<MainActivity>().use {
-            sleep(5, TimeUnit.SECONDS)
             clickOn(R.id.getForecastForLocation)
 
             assertDisplayed(R.string.error_title)

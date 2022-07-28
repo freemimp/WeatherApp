@@ -2,7 +2,6 @@ package uk.co.freemimp.weatherapp.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -22,15 +21,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsResponse
-import com.google.android.gms.location.SettingsClient
-import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import uk.co.freemimp.weatherapp.R
@@ -58,7 +48,6 @@ class MainFragment : Fragment() {
 
     private lateinit var locationPermissionRequest: ActivityResultLauncher<String>
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var location: Location? = null
 
     override fun onCreateView(
@@ -71,9 +60,6 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fusedLocationClient =
-            LocationServices.getFusedLocationProviderClient(requireContext())
-
         locationPermissionRequest =
             registerForActivityResult(
                 ActivityResultContracts.RequestPermission()
@@ -93,35 +79,6 @@ class MainFragment : Fragment() {
         setupButtons()
         setupObservables()
         checkAndAskForPermission()
-    }
-
-    private fun checkLocationSettings() {
-        val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-        val client: SettingsClient = LocationServices.getSettingsClient(requireContext())
-        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-
-        task.addOnSuccessListener {
-            getCurrentLocation()
-        }
-
-        task.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException) {
-                try {
-                    exception.startResolutionForResult(
-                        requireActivity(),
-                        REQUEST_CHECK_SETTINGS
-                    )
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    // Ignore the error.
-                }
-            }
-        }
     }
 
     private fun showLocationRationaleToast() {
@@ -156,11 +113,10 @@ class MainFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
-        fusedLocationClient.getCurrentLocation(
-            LocationRequest.PRIORITY_HIGH_ACCURACY,
-            CancellationTokenSource().token
-        ).addOnSuccessListener {
-            location = it
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getLocation.collect {
+                location = it
+            }
         }
     }
 
@@ -169,11 +125,9 @@ class MainFragment : Fragment() {
             viewModel.showForecastForTheCity(binding.cityForForecast.text.toString())
         }
         binding.getForecastForLocation.setOnClickListener {
-            checkLocationSettings()
             viewModel.showForecastForCurrentLocation(location?.latitude, location?.longitude)
         }
         binding.openMapForLocation.setOnClickListener {
-            checkLocationSettings()
             viewModel.navigateToMapFragment(location?.latitude, location?.longitude)
         }
     }
@@ -323,5 +277,3 @@ class MainFragment : Fragment() {
         super.onDestroyView()
     }
 }
-
-private const val REQUEST_CHECK_SETTINGS = 479

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import uk.co.freemimp.core.location.LocationRepository
 import uk.co.freemimp.core.model.DayWeather
 import uk.co.freemimp.domain.usecase.GetForecastForCityUseCase
 import uk.co.freemimp.domain.usecase.GetForecastForLocationUseCase
@@ -20,10 +21,13 @@ import uk.co.freemimp.domain.usecase.GetLocationFormattedUseCase
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    locationRepository: LocationRepository,
     private val getForecastForCityUseCase: GetForecastForCityUseCase,
     private val getForecastForLocationUseCase: GetForecastForLocationUseCase,
     private val getLocationFormattedUseCase: GetLocationFormattedUseCase
 ) : ViewModel() {
+
+    val getLocation = locationRepository.getLocations()
 
     private val _weatherLocationName = MutableStateFlow<String>("")
     val weatherLocationName: StateFlow<String> = _weatherLocationName
