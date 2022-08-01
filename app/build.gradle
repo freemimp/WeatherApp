@@ -67,6 +67,8 @@ android {
 }
 
 dependencies {
+    implementation project(":main")
+    implementation project(":map")
     implementation project(":data")
     implementation project(":core")
     implementation project(":domain")
@@ -74,13 +76,8 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0'
     implementation 'androidx.fragment:fragment:1.5.0'
     implementation 'androidx.core:core-ktx:1.8.0'
-    def nav_version = "2.5.0"
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.6'
 
@@ -89,20 +86,11 @@ dependencies {
     implementation 'com.google.dagger:hilt-android:2.43'
     kapt 'com.google.dagger:hilt-compiler:2.43'
 
-    // Google Play services
-    implementation 'com.google.android.gms:play-services-location:20.0.0'
-
-    //Glide
-    def glideVersion = '4.13.2'
-    implementation "com.github.bumptech.glide:glide:$glideVersion"
-    kapt "com.github.bumptech.glide:compiler:$glideVersion"
-
-
     // Testing
     testImplementation 'junit:junit:4.13.2'
     testImplementation(platform('org.junit:junit-bom:5.9.0'))
     testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation('com.squareup.okhttp3:mockwebserver:5.0.0-alpha.10')
+    testImplementation('com.squareup.okhttp3:mockwebserver:4.10.0')
     testImplementation 'io.mockk:mockk:1.12.5'
     testImplementation 'app.cash.turbine:turbine:0.8.0'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"

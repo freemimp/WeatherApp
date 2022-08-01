@@ -25,9 +25,13 @@ import com.google.android.gms.location.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.shareIn
 import uk.co.freemimp.core.utils.hasPermission
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 class SharedLocationManager constructor(
@@ -49,7 +53,10 @@ class SharedLocationManager constructor(
     private val _locationUpdates = callbackFlow {
         val callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                Log.d(TAG, "New location: ${result.lastLocation?.longitude}, ${result.lastLocation?.latitude}")
+                Log.d(
+                    TAG,
+                    "New location: ${result.lastLocation?.longitude}, ${result.lastLocation?.latitude}"
+                )
 
                 result.lastLocation?.let {
                     trySend(it)
