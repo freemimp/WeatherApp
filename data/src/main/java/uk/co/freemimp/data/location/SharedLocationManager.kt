@@ -1,18 +1,3 @@
-/*
- * Copyright 2019-2021 Google LLC, Sean Barbeau
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package uk.co.freemimp.data.location
 
 import android.Manifest
@@ -21,7 +6,13 @@ import android.content.Context
 import android.location.Location
 import android.os.Looper
 import android.util.Log
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -30,9 +21,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.shareIn
 import uk.co.freemimp.core.utils.hasPermission
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
+// not tested as it contains android classes, that I can't mock or fake in unit test,
+// possibly can be tested by using RoboElectric
 @ExperimentalCoroutinesApi
 class SharedLocationManager constructor(
     private val context: Context,
@@ -43,9 +34,9 @@ class SharedLocationManager constructor(
         LocationServices.getFusedLocationProviderClient(context)
 
     private val locationRequest = LocationRequest.create().apply {
-        interval = TimeUnit.SECONDS.toMillis(5)
+        interval = TimeUnit.SECONDS.toMillis(DEFAULT_WAITING_TIME)
         fastestInterval = TimeUnit.SECONDS.toMillis(1)
-        maxWaitTime = TimeUnit.SECONDS.toMillis(5)
+        maxWaitTime = TimeUnit.SECONDS.toMillis(DEFAULT_WAITING_TIME)
         priority = Priority.PRIORITY_BALANCED_POWER_ACCURACY
     }
 
@@ -78,7 +69,7 @@ class SharedLocationManager constructor(
 
         awaitClose {
             Log.d(TAG, "Stopping location updates")
-            fusedLocationClient.removeLocationUpdates(callback) // clean up when Flow collection ends
+            fusedLocationClient.removeLocationUpdates(callback)
         }
     }.shareIn(
         externalScope,
@@ -92,3 +83,4 @@ class SharedLocationManager constructor(
 }
 
 private const val TAG = "SharedLocationManager"
+private const val DEFAULT_WAITING_TIME = 5L

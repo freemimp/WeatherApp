@@ -24,7 +24,7 @@ class MainViewModel @Inject constructor(
     private val getLocationFormattedUseCase: GetLocationFormattedUseCase
 ) : ViewModel() {
 
-    val getLocation = locationRepository.getLocations()
+    val getLocation = locationRepository.getLocation()
 
     private val _weatherLocationName = MutableStateFlow<String>("")
     val weatherLocationName: StateFlow<String> = _weatherLocationName

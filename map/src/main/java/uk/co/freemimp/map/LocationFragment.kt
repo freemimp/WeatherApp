@@ -35,7 +35,7 @@ class LocationFragment : Fragment(), OnMapReadyCallback {
         }
 
     private var locationFlow: Job? = null
-    private var location: Location? = null
+    private lateinit var googleMap: GoogleMap
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,22 +50,19 @@ class LocationFragment : Fragment(), OnMapReadyCallback {
         locationFlow = viewModel.location
             .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
             .onEach {
-               location = it
+                setupMap(googleMap, it)
             }
             .launchIn(lifecycleScope)
 
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
 
-
-
     override fun onMapReady(googleMap: GoogleMap) {
-        setupMap(googleMap, location)
+       this.googleMap = googleMap
     }
 
-    private fun setupMap(googleMap: GoogleMap, location: Location?) {
-
-        val userLocation = LatLng(location?.latitude ?: 0.0, location?.longitude ?: 0.0)
+    private fun setupMap(googleMap: GoogleMap, location: Location) {
+        val userLocation = LatLng(location.latitude, location.longitude)
         val cameraPosition = CameraPosition.Builder()
             .target(userLocation)
             .zoom(DEFAULT_ZOOM)

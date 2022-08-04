@@ -1,64 +1,8 @@
-plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.kapt'
-    id 'dagger.hilt.android.plugin'
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
-    id 'androidx.navigation.safeargs.kotlin'
-}
-
-android {
-    compileSdk 32
-
-    defaultConfig {
-        minSdk 23
-        targetSdk 32
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-
-        buildConfigField "String", "BASE_URL", project.findProperty("base_url")
-        buildConfigField "String", "API_KEY", project.findProperty("api_key")
-    }
-
-    testOptions {
-        unitTests.all {
-            useJUnitPlatform()
-        }
-        unitTests.returnDefaultValues = true
-
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    compileOptions {
-        coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
+apply from: "${project.rootDir}/android-library.gradle"
 
 dependencies {
     implementation project(":core")
-
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.0'
-
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'com.google.android.material:material:1.6.1'
-
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation project(":core")
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation 'com.google.android.gms:play-services-location:20.0.0'
 
     //Retrofit
     def retrofitVersion = "2.9.0"
@@ -77,24 +21,12 @@ dependencies {
     kapt 'com.google.dagger:hilt-compiler:2.43'
 
     // Testing
+    implementation project(":common_test")
     testImplementation 'junit:junit:4.13.2'
     testImplementation(platform('org.junit:junit-bom:5.9.0'))
     testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
-    testImplementation 'io.mockk:mockk:1.12.3'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation 'io.mockk:mockk-android:1.12.3'
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestUtil 'androidx.test:orchestrator:1.4.1'
-    androidTestImplementation "androidx.test:core:1.4.0"
-    androidTestImplementation 'androidx.test:core-ktx:1.4.0'
-    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.43'
-    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.43'
-    androidTestAnnotationProcessor 'com.google.dagger:hilt-android-compiler:2.43'
-    androidTestImplementation('com.adevinta.android:barista:4.2.0') {
-        exclude group: 'org.jetbrains.kotlin' // Only if you already use Kotlin in your project
-    }
-
-    implementation project(":common_test")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.10.0")
+    testImplementation 'io.mockk:mockk:1.12.5'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
+    testImplementation 'app.cash.turbine:turbine:0.8.0'
 }
