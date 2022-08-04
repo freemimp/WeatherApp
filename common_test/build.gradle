@@ -1,0 +1,9 @@
+apply from: "${project.rootDir}/android-library.gradle"
+
+dependencies {
+    implementation project(":core")
+    implementation(platform("org.junit:junit-bom:$junit5_version"))
+    implementation('org.junit.jupiter:junit-jupiter')
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+
+}

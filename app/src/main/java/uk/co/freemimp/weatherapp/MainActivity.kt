@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import uk.co.freemimp.weatherapp.databinding.ActivityMainBinding
-import uk.co.freemimp.weatherapp.ui.main.MainFragment
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {

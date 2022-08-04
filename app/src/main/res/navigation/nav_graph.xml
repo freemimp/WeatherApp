@@ -5,36 +5,13 @@
     android:id="@+id/nav_graph.xml"
     app:startDestination="@id/mainFragment">
 
+    <include app:graph="@navigation/main_nav_graph" />
+    <include app:graph="@navigation/map_nav_graph" />
+
     <fragment
         android:id="@+id/mainFragment"
-        android:name="uk.co.freemimp.weatherapp.ui.main.MainFragment"
+        android:name="uk.co.freemimp.main.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main" >
-        <action
-            android:id="@+id/action_mainFragment_to_locationFragment"
-            app:destination="@id/locationFragment">
-            <argument
-                android:name="latitude"
-                app:argType="float"
-                android:defaultValue="0" />
-            <argument
-                android:name="longitude"
-                app:argType="float"
-                android:defaultValue="0" />
-
-        </action>
-    </fragment>
-    <fragment
-        android:id="@+id/locationFragment"
-        android:name="uk.co.freemimp.weatherapp.ui.map.LocationFragment"
-        android:label="LocationFragment" >
-        <argument
-            android:name="latitude"
-            app:argType="float"
-            android:defaultValue="0" />
-        <argument
-            android:name="longitude"
-            app:argType="float"
-            android:defaultValue="0" />
     </fragment>
 </navigation>

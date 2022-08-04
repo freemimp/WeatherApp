@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context=".ui.main.MainFragment"
+        android:padding="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cityForForecast"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/please_enter_city_or_town_hint"
+            android:textColorHint="#757575"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/getForecast"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/get_forecast_button"
+            app:layout_constraintEnd_toEndOf="@+id/cityForForecast"
+            app:layout_constraintStart_toStartOf="@+id/cityForForecast"
+            app:layout_constraintTop_toBottomOf="@+id/cityForForecast" />
+
+        <Button
+            android:id="@+id/getForecastForLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/get_forecast_for_my_location_button"
+            app:layout_constraintEnd_toEndOf="@+id/getForecast"
+            app:layout_constraintStart_toStartOf="@+id/getForecast"
+            app:layout_constraintTop_toBottomOf="@+id/getForecast" />
+
+        <Button
+            android:id="@+id/openMapForLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/open_map_for_my_location"
+            app:layout_constraintEnd_toEndOf="@+id/getForecastForLocation"
+            app:layout_constraintStart_toStartOf="@+id/getForecastForLocation"
+            app:layout_constraintTop_toBottomOf="@+id/getForecastForLocation" />
+
+        <ProgressBar
+            android:id="@+id/loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/openMapForLocation" />
+
+        <TextView
+            android:id="@+id/weatherLocationName"
+            style="@style/TextAppearance.Material3.TitleLarge"
+            tools:text="London"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/openMapForLocation"
+            app:layout_constraintStart_toStartOf="@id/openMapForLocation"
+            app:layout_constraintEnd_toEndOf="@id/openMapForLocation"/>
+
+        <include
+            android:id="@+id/day1Forecast"
+            layout="@layout/textview_list_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/weatherLocationName" />
+
+        <include
+            android:id="@+id/day2Forecast"
+            layout="@layout/textview_list_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/day1Forecast" />
+
+        <include
+            android:id="@+id/day3Forecast"
+            layout="@layout/textview_list_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/day2Forecast" />
+
+        <include
+            android:id="@+id/day4Forecast"
+            layout="@layout/textview_list_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/day3Forecast" />
+
+        <include
+            android:id="@+id/day5Forecast"
+            layout="@layout/textview_list_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/day4Forecast" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
