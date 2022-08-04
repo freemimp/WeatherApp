@@ -35,7 +35,7 @@ class LocationFragment : Fragment(), OnMapReadyCallback {
         }
 
     private var locationFlow: Job? = null
-    private lateinit var googleMap: GoogleMap
+    private var googleMap: GoogleMap? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,18 +61,18 @@ class LocationFragment : Fragment(), OnMapReadyCallback {
        this.googleMap = googleMap
     }
 
-    private fun setupMap(googleMap: GoogleMap, location: Location) {
+    private fun setupMap(googleMap: GoogleMap?, location: Location) {
         val userLocation = LatLng(location.latitude, location.longitude)
         val cameraPosition = CameraPosition.Builder()
             .target(userLocation)
             .zoom(DEFAULT_ZOOM)
             .build()
-        googleMap.addMarker(
+        googleMap?.addMarker(
             MarkerOptions().position(userLocation)
                 .title("YourLocation")
         )
 
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+        googleMap?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 
     override fun onDestroyView() {
