@@ -1,0 +1,30 @@
+plugins {
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+    id 'dagger.hilt.android.plugin'
+}
+apply from: "${project.rootDir}/android-library.gradle"
+
+dependencies {
+    implementation project(":core")
+
+    //Android
+    implementation "com.google.android.material:material:$android_materia_version"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
+    implementation "androidx.fragment:fragment:$fragment_version"
+
+    // Google Play services
+    implementation "com.google.android.gms:play-services-location:$services_location_version"
+    implementation "com.google.android.gms:play-services-maps:$google_maps_version"
+
+    //Hilt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    //Testing
+    testImplementation "junit:junit:$junit4_version"
+    testImplementation(platform("org.junit:junit-bom:$junit5_version"))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation "io.mockk:mockk:$mockk_version"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    testImplementation "app.cash.turbine:turbine:$turbine_version"
+}

@@ -1,0 +1,32 @@
+apply from: "${project.rootDir}/android-library.gradle"
+
+dependencies {
+    implementation project(":core")
+    implementation project(":common_test")
+
+    //Google Location
+    implementation "com.google.android.gms:play-services-location:$services_location_version"
+
+    //Retrofit
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp3_logging_interceptor_version"
+
+    //Moshi
+    implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
+    implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
+
+    //Hilt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    // Testing
+    testImplementation "junit:junit:$junit4_version"
+    testImplementation(platform("org.junit:junit-bom:$junit5_version"))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation("com.squareup.okhttp3:mockwebserver:$mockwebserver_version")
+    testImplementation "io.mockk:mockk:$mockk_version"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    testImplementation "app.cash.turbine:turbine:$turbine_version"
+}

@@ -1,5 +1,6 @@
 package uk.co.freemimp.weatherapp.ui.main
 
+import android.location.Location
 import androidx.test.core.app.launchActivity
 import androidx.test.rule.GrantPermissionRule
 import com.adevinta.android.barista.assertion.BaristaVisibilityAssertions.assertDisplayed
@@ -13,25 +14,26 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.testing.TestInstallIn
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import uk.co.freemimp.core.location.LocationRepository
 import uk.co.freemimp.weatherapp.MainActivity
 import uk.co.freemimp.weatherapp.R
-import uk.co.freemimp.weatherapp.di.ViewModelModule
-import uk.co.freemimp.weatherapp.domain.model.DayWeather
-import uk.co.freemimp.weatherapp.domain.model.Forecast
-import uk.co.freemimp.weatherapp.domain.repository.ForecastRepository
-import uk.co.freemimp.weatherapp.domain.repository.ForecastRepositoryImpl
+import uk.co.freemimp.data.di.ViewModelModule
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import kotlin.time.DurationUnit
+import uk.co.freemimp.core.model.DayWeather
+import uk.co.freemimp.core.model.Forecast
+import uk.co.freemimp.core.repository.ForecastRepository
+import uk.co.freemimp.data.ForecastRepositoryImpl
+import uk.co.freemimp.weatherapp.LocationModule
 
-@UninstallModules(ViewModelModule::class)
+@UninstallModules(ViewModelModule::class, LocationModule::class)
 @HiltAndroidTest
 class MainFragmentTests {
 
@@ -96,23 +98,33 @@ class MainFragmentTests {
         @Singleton
         @Provides
         fun provideMockkForecastRepository(): ForecastRepository {
-            val dayWeather = mockk<DayWeather> {
-                every { date } returns "2022-05-16"
-                every { time } returns "18:00:00"
-                every { temperature } returns 10.25
-                every { iconUrl } returns "https://openweathermap.org/img/wn/01d@2x.png"
+            val dayWeather = mockk<DayWeather>(relaxed = true) {
+                every { this@mockk.date } returns "2022-05-16"
+                every { this@mockk.time } returns "18:00:00"
+                every { this@mockk.temperature } returns 10.25
+                every { this@mockk.iconUrl } returns "https://openweathermap.org/img/wn/01d@2x.png"
             }
             val forecast = mockk<Forecast> {
-                every { day1 } returns listOf(dayWeather)
-                every { day2 } returns listOf(dayWeather)
-                every { day3 } returns listOf(dayWeather)
-                every { day4 } returns listOf(dayWeather)
-                every { day5 } returns listOf(dayWeather)
+                every { this@mockk.day1 } returns listOf(dayWeather)
+                every { this@mockk.day2 } returns listOf(dayWeather)
+                every { this@mockk.day3 } returns listOf(dayWeather)
+                every { this@mockk.day4 } returns listOf(dayWeather)
+                every { this@mockk.day5 } returns listOf(dayWeather)
             }
             val impl = mockk<ForecastRepositoryImpl>()
             coEvery { impl.get5Day3HourForecastForCity(any()) } returns forecast
             coEvery { impl.get5Day3HourForecastForCurrentLocation(any(), any()) } returns forecast
             return impl
+        }
+
+        @Singleton
+        @Provides
+        fun provideMockkLocationRepository(): LocationRepository {
+            val location = mockk<Location>(relaxed = true)
+            val locationRepository = mockk<LocationRepository>()
+            every { locationRepository.getLocation() } returns flowOf(location)
+
+            return locationRepository
         }
     }
 }

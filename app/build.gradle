@@ -4,16 +4,15 @@ plugins {
     id 'org.jetbrains.kotlin.kapt'
     id 'dagger.hilt.android.plugin'
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
-    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
-    compileSdk 32
+    compileSdk compile_sdk
 
     defaultConfig {
         applicationId "uk.co.freemimp.weatherapp"
-        minSdk 21
-        targetSdk 32
+        minSdk min_sdk
+        targetSdk target_sdk
         versionCode 1
         versionName "1.0"
 
@@ -33,11 +32,6 @@ android {
     }
 
     testOptions {
-        unitTests.all {
-            useJUnitPlatform()
-        }
-        unitTests.returnDefaultValues = true
-
         execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
@@ -51,7 +45,6 @@ android {
         }
     }
     compileOptions {
-        coreLibraryDesugaringEnabled true
 
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -59,65 +52,44 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/LICENSE-notice.md'
+    }
 }
 
 dependencies {
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.gms:play-services-maps:18.0.2'
-    implementation 'com.google.android.material:material:1.6.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
-    implementation 'androidx.fragment:fragment:1.4.1'
-    implementation 'androidx.core:core-ktx:1.7.0'
-    def nav_version = "2.4.2"
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation project(":main")
+    implementation project(":map")
+    implementation project(":data")
+    implementation project(":core")
+    implementation project(":domain")
+    implementation project(":common_test")
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-
-    //Retrofit
-    def retrofitVersion = "2.9.0"
-    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
-    implementation "com.squareup.retrofit2:converter-moshi:$retrofitVersion"
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.3'
-
-    //Moshi
-    def moshiVersion = "1.13.0"
-    implementation "com.squareup.moshi:moshi-kotlin:$moshiVersion"
-    implementation "com.squareup.moshi:moshi-adapters:$moshiVersion"
-    kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
+    //Android
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "com.google.android.gms:play-services-maps:$google_maps_version"
+    implementation "com.google.android.material:material:$android_materia_version"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
+    implementation "androidx.fragment:fragment:$fragment_version"
 
     //Hilt
-    implementation "com.google.dagger:hilt-android:2.42"
-    kapt "com.google.dagger:hilt-compiler:2.42"
-
-    // Google Play services
-    implementation 'com.google.android.gms:play-services-location:19.0.1'
-
-    //Glide
-    def glideVersion = "4.11.0"
-    implementation "com.github.bumptech.glide:glide:$glideVersion"
-    kapt "com.github.bumptech.glide:compiler:$glideVersion"
-
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
 
     // Testing
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation(platform('org.junit:junit-bom:5.8.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
-    testImplementation "io.mockk:mockk:1.12.3"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation "io.mockk:mockk-android:1.12.3"
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestUtil 'androidx.test:orchestrator:1.4.1'
-    androidTestImplementation "androidx.test:core:1.4.0"
-    androidTestImplementation 'androidx.test:core-ktx:1.4.0'
-    androidTestImplementation "com.google.dagger:hilt-android-testing:2.42"
-    kaptAndroidTest "com.google.dagger:hilt-android-compiler:2.42"
-    androidTestAnnotationProcessor "com.google.dagger:hilt-android-compiler:2.42"
-    androidTestImplementation('com.adevinta.android:barista:4.2.0') {
+    androidTestImplementation "androidx.test.ext:junit:$test_ext_junit_version"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_core_version"
+    androidTestImplementation "io.mockk:mockk-android:$mockk_version"
+    androidTestImplementation "androidx.test:runner:$test_core_runner_version"
+    androidTestUtil "androidx.test:orchestrator:$test_orchestrator_version"
+    androidTestImplementation "androidx.test:core:$test_core_runner_version"
+    androidTestImplementation "androidx.test:core-ktx:$test_core_runner_version"
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hilt_version"
+    androidTestAnnotationProcessor "com.google.dagger:hilt-android-compiler:$hilt_version"
+    androidTestImplementation ("com.adevinta.android:barista:$barista_version") {
         exclude group: 'org.jetbrains.kotlin' // Only if you already use Kotlin in your project
     }
 }
