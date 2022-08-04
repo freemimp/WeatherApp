@@ -15,10 +15,11 @@ import uk.co.freemimp.data.location.LocationRepositoryImpl
 import uk.co.freemimp.data.location.SharedLocationManager
 import javax.inject.Singleton
 
+@DelicateCoroutinesApi
+@ExperimentalCoroutinesApi
 @Module
 @InstallIn(SingletonComponent::class)
 object LocationModule {
-    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     @Provides
     @Singleton
     fun provideSharedLocationManager(

@@ -5,13 +5,15 @@ dependencies {
     implementation project(":core")
     implementation project(":common_test")
 
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation(platform('org.junit:junit-bom:5.9.0'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
-    testImplementation 'io.mockk:mockk:1.12.5'
-
     //Hilt
-    implementation 'com.google.dagger:hilt-android:2.43'
-    kapt 'com.google.dagger:hilt-compiler:2.43'
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    //Testing
+    testImplementation "junit:junit:$junit4_version"
+    testImplementation(platform("org.junit:junit-bom:$junit5_version"))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    testImplementation "io.mockk:mockk:$mockk_version"
+
 }
