@@ -3,6 +3,9 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 apply from: "${project.rootDir}/android-library.gradle"
+android {
+    namespace 'uk.co.freemimp.core'
+}
 
 dependencies {
     api "androidx.core:core-ktx:$core_ktx_version"

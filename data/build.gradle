@@ -1,4 +1,7 @@
 apply from: "${project.rootDir}/android-library.gradle"
+android {
+    namespace 'uk.co.freemimp.data'
+}
 
 dependencies {
     implementation project(":core")
@@ -15,11 +18,11 @@ dependencies {
     //Moshi
     implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
-    kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
+    ksp "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
 
     //Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-compiler:$hilt_version"
+    ksp "com.google.dagger:hilt-compiler:$hilt_version"
 
     // Testing
     testImplementation "junit:junit:$junit4_version"
